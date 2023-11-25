@@ -14,8 +14,13 @@ data class Delivery(
         @Field("order_id", targetType = FieldType.OBJECT_ID)
         val orderId: String,
 
-        @Field("user_id", targetType = FieldType.OBJECT_ID)
-        val userId: String,
+        @Field("order_item_id", targetType = FieldType.OBJECT_ID)
+        val orderItemId: String,
+
+        @Field("customer_id", targetType = FieldType.OBJECT_ID)
+        val customerId: String,
+
+        val shipperId: String,
 
         val deliveryAddressId: String,
 

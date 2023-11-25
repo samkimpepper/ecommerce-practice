@@ -13,6 +13,9 @@ data class OrderItem(
     @Field("order_id", targetType = FieldType.OBJECT_ID)
     val orderId: String,
 
+    @Field("delivery_id", targetType = FieldType.OBJECT_ID)
+    val deliveryId: String? = null,
+
     @Field("product_id", targetType = FieldType.OBJECT_ID)
     val productId: String?,
 

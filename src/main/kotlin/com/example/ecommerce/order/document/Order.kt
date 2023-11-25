@@ -11,11 +11,8 @@ data class Order(
         @Id
         var id: String? = null,
 
-        @Field("user_id", targetType = FieldType.OBJECT_ID)
-        val userId: String,
-
-        @Field("delivery_id", targetType = FieldType.OBJECT_ID)
-        val deliveryId: String? = null,
+        @Field("customer_id", targetType = FieldType.OBJECT_ID)
+        val customerId: String,
 
         @Field("delivery_address_id", targetType = FieldType.OBJECT_ID)
         val deliveryAddressId: String,

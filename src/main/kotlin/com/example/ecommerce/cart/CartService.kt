@@ -104,10 +104,7 @@ class CartService(
                         .flatMap { shippingCost ->
                             cart.totalQuantity = items.sumOf { it.quantity }
                             cart.totalPrice = items.sumOf { it.price }
-                            if (cart.totalPrice >= freeShippingThreshold)
-                                cart.totalShippingCost = 0
-                            else
-                                cart.totalShippingCost = shippingCost
+                            cart.totalShippingCost = shippingCost
 
                             cartRepository.save(cart)
                         }
@@ -116,15 +113,20 @@ class CartService(
 
     private fun calculateShippingCost(items: List<CartItem>): Mono<Int> {
         var totalShippingCost = 0
-        val groups = items.groupBy { it.productId }
 
-        return productRepository.findAllById(groups.keys)
+        return productRepository.findAllById(items.map { it.productId })
             .collectList()
             .map { products ->
-                groups.forEach { (productId, cartItems) ->
-                    val product = products.find { it.id == productId }
-                    product?.let {
-                        totalShippingCost += product.shippingCost
+                val productToMerchantMap = products.associate { it.id to it.merchantId }
+                val merchantToItemsMap: Map<String?, List<CartItem>> = items.groupBy { productToMerchantMap[it.productId] }
+
+                merchantToItemsMap.forEach { (_, cartItems) ->
+                    val firstItem = cartItems.firstOrNull()
+                    firstItem?.let {
+                        val product = products.find { p -> p.id == it.productId }
+                        product?.let { p ->
+                            totalShippingCost += p.shippingCost
+                        }
                     }
                 }
                 totalShippingCost
