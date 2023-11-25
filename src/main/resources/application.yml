@@ -1,0 +1,9 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://lcl:won2977@mongo1:27027,mongo2:27028,mongo3:27029/ecommerce?replicaSet=eReplicaSet
+
+
+jwt:
+  secret: honyanyaynaynaynaynaringaringaringa
+  expiration: 86400000
