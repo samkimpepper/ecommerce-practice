@@ -1,4 +1,4 @@
-package com.example.ecommerce.order
+package com.example.ecommerce.order.dto
 
 data class OrderFromCartRequest(
     val paymentMethod: String,

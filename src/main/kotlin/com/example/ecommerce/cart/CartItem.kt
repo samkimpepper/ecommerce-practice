@@ -15,6 +15,8 @@ data class CartItem(
 
         var optionId: String,
 
+        var merchantId: String,
+
         var productName: String,
 
         var optionSize: String,

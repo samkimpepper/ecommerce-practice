@@ -15,6 +15,7 @@ data class ProductOption(
     var stock: Int,
 
     val productId: String,
+
 ) {
     fun increaseStock(amount: Int) {
         stock += amount

@@ -1,4 +1,4 @@
-package com.example.ecommerce.user
+package com.example.ecommerce.deliveryaddress
 
 import org.springframework.data.annotation.Id
 import org.springframework.data.mongodb.core.index.Indexed

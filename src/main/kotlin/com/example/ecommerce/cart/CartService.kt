@@ -46,6 +46,7 @@ class CartService(
                         cartId = cart.id!!,
                         productId = product.id!!,
                         optionId = productOption.id!!,
+                        merchantId = product.merchantId,
                         productName = product.name,
                         optionSize = productOption.size,
                         quantity = addItemRequest.quantity,
@@ -132,4 +133,17 @@ class CartService(
                 totalShippingCost
             }
     }
+
+//    private fun calculateShippingCost2(items: List<CartItem>): Mono<Int> {
+//        var totalShippingCost = 0
+//
+//        val merchantToItemsMap = items.groupBy { it.merchantId }
+//        merchantToItemsMap.forEach { (_, cartItems) ->
+//            val firstItem = cartItems.firstOrNull()
+//            firstItem?.let {
+//                totalShippingCost +=
+//            }
+//
+//        }
+//    }
 }

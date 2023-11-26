@@ -14,13 +14,16 @@ data class OrderItem(
     val orderId: String,
 
     @Field("delivery_id", targetType = FieldType.OBJECT_ID)
-    val deliveryId: String? = null,
+    var deliveryId: String? = null,
 
     @Field("product_id", targetType = FieldType.OBJECT_ID)
     val productId: String?,
 
     @Field("option_id", targetType = FieldType.OBJECT_ID)
     val optionId: String?,
+
+    @Field("merchant_id", targetType = FieldType.OBJECT_ID)
+    val merchantId: String?,
 
     var productName: String,
 

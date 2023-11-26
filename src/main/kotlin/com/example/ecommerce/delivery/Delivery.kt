@@ -11,17 +11,16 @@ data class Delivery(
         @Id
         var id: String? = null,
 
-        @Field("order_id", targetType = FieldType.OBJECT_ID)
-        val orderId: String,
-
         @Field("order_item_id", targetType = FieldType.OBJECT_ID)
-        val orderItemId: String,
+        val orderItemIds: List<String>,
 
         @Field("customer_id", targetType = FieldType.OBJECT_ID)
         val customerId: String,
 
+        @Field("shipper_id", targetType = FieldType.OBJECT_ID)
         val shipperId: String,
 
+        @Field("delivery_address_id", targetType = FieldType.OBJECT_ID)
         val deliveryAddressId: String,
 
         var status: DeliveryStatus = DeliveryStatus.PREPARING,
@@ -30,7 +29,7 @@ data class Delivery(
 
         var estimatedDeliveryDate: Instant,
 
-        val startedAt: Instant? = null,
+        val startedAt: Instant = Instant.now(),
 
         val deliveredAt: Instant? = null,
 )
