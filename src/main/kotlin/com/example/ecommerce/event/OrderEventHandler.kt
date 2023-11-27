@@ -34,6 +34,7 @@ class OrderEventHandler(
                 }.then()
             )
             .flatMap {
+                println("notification!!")
                 notificationRepository.saveAll(event.toNotifications())
                     .then()
             }

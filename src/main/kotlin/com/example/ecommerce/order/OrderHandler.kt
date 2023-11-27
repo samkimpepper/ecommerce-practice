@@ -63,8 +63,10 @@ class OrderHandler(
                     .flatMap { user ->
                         productRepository.findById(singleProductRequest.productId)
                             .flatMap { product ->
-                                val quantityPerOption = createQuantityPerOptionMap(singleProductRequest.quantityPerOptionId)
-                                orderService.orderSingleProduct(singleProductRequest, user, quantityPerOption, product)
+                                createQuantityPerOptionMap(singleProductRequest.quantityPerOptionId)
+                                    .flatMap { quantityPerOption ->
+                                        orderService.orderSingleProduct(singleProductRequest, user, quantityPerOption, product)
+                                    }
                             }
                     }
                     .flatMap {

@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -17,34 +18,44 @@ class ProductService(
 ) {
     private val pageSize: Int = 8
 
-    fun saveProduct(request: SaveProductRequest): Mono<Product> {
+    fun saveProduct(request: SaveProductRequest, merchantId: String): Mono<Product> {
         val product = Product(
                 name = request.name,
                 image = request.image,
                 description = request.description,
+                merchantId = merchantId,
+                shippingCost = request.shippingCost,
         )
 
         return productRepository.save(product)
     }
 
+    @Transactional
     fun saveProductOption(request: SaveProductOptionRequest): Mono<ProductOption> {
-        return productRepository.findById(request.productId)
-                .flatMap { product ->
-                    product.increaseStock(request.stock)
-                    if (product.minimumPrice > request.price) {
-                        product.minimumPrice = request.price
-                    }
-                    productRepository.save(product)
-
-                    val productOption = ProductOption(
-                            productId = request.productId,
-                            price = request.price,
-                            size = request.size,
-                            stock = request.stock,
-                    )
-                    productOptionRepository.save(productOption)
+        val productMono = productRepository.findById(request.productId)
+            .flatMap { product ->
+                product.increaseStock(request.stock)
+                if (product.minimumPrice > request.price) {
+                    product.minimumPrice = request.price
                 }
-                .switchIfEmpty(Mono.error<ProductOption>(Exception("Product not found")))
+                productRepository.save(product)
+            }
+
+        val optionMono = Mono.just(
+            ProductOption(
+                productId = request.productId,
+                price = request.price,
+                size = request.size,
+                stock = request.stock,
+            )
+        ).flatMap { option ->
+            productOptionRepository.save(option)
+        }
+
+        return Mono.zip(productMono, optionMono) { _, option ->
+            option
+        }
+        .switchIfEmpty(Mono.error<ProductOption>(Exception("Product not found")))
     }
 
     fun getProductInfo(productId: String): Mono<ProductInfoResponse> {
@@ -63,6 +74,7 @@ class ProductService(
 
     fun restock(restockRequest: RestockRequest): Mono<ProductInfoResponse> {
         return productRepository.findById(restockRequest.productId)
+            .switchIfEmpty(Mono.error(Exception("product not found")))
                 .flatMap { product ->
                     val totalStock = restockRequest.optionStockUpdates.values.sum()
                     product.increaseStock(totalStock)
@@ -70,6 +82,7 @@ class ProductService(
                             .thenMany(Flux.fromIterable(restockRequest.optionStockUpdates.entries))
                             .flatMap { entry ->
                                 productOptionRepository.findById(entry.key)
+                                    .switchIfEmpty(Mono.error(Exception("option not found")))
                                         .flatMap { option ->
                                             option.increaseStock(entry.value)
                                             productOptionRepository.save(option)
@@ -91,17 +104,5 @@ class ProductService(
         }
 
     }
-//    fun restock(restockRequest: RestockRequest): Mono<ProductInfoResponse> {
-//        return productRepository.findById(restockRequest.productId)
-//                .flatMap { product ->
-//                    product.increaseStock(restockRequest.amount)
-//                    productRepository.save(product)
-//                    productOptionRepository.findById(restockRequest.productOptionId)
-//                            .flatMap { option ->
-//                                option.increaseStock(restockRequest.amount)
-//                                productOptionRepository.save(option)
-//                            }
-//                            .then(Mono.just(ProductInfoResponse.fromProduct(product)))
-//                }
-//    }
+
 }

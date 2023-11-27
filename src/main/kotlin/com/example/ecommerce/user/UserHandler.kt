@@ -15,6 +15,7 @@ class UserHandler(
 ) {
 
     fun register(request: ServerRequest): Mono<ServerResponse> {
+        println("register")
         return request.bodyToMono(RegisterRequest::class.java)
                 .flatMap { user ->
                     userService.register(user)

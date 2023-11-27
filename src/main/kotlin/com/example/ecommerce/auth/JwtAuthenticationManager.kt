@@ -19,6 +19,7 @@ class JwtAuthenticationManager(
         return Mono.justOrEmpty(authentication)
                 .filter{auth -> auth is BearerToken }
                 .cast(BearerToken::class.java)
+                .onErrorMap { error -> InvalidBearerToken("type error ") }
                 .flatMap { jwt -> mono { validate(jwt) } }
                 .onErrorMap { error -> InvalidBearerToken(error.message ?: "Invalid token") }
 

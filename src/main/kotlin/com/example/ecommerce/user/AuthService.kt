@@ -4,6 +4,8 @@ import com.example.ecommerce.auth.JwtAuthenticationManager
 import com.example.ecommerce.auth.JwtProvider
 import org.springframework.security.authentication.ReactiveAuthenticationManager
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.ReactiveSecurityContextHolder
+import org.springframework.security.core.context.SecurityContextImpl
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
@@ -25,13 +27,20 @@ class AuthService(
 
     fun generateToken(user: User): Mono<String> {
         val authenticationToken = UsernamePasswordAuthenticationToken(user.email, user.password)
-        return authManager.authenticate(authenticationToken)
-                .flatMap { auth ->
-                    Mono.just(jwtProvider.generate(auth.name).value)
-                }
-                .onErrorResume {
-                    Mono.error(Exception("인증 실패링"))
-                }
+        val securityContext = SecurityContextImpl(authenticationToken)
+
+
+        return Mono.just(securityContext)
+            .flatMap { context ->
+                ReactiveSecurityContextHolder.withSecurityContext(Mono.just(context))
+                Mono.just(authenticationToken)
+            }
+            .then(Mono.just(jwtProvider.generate(authenticationToken.name).value))
+            .onErrorResume {
+                Mono.error(Exception("토큰 생성 실패"))
+            }
+
+
     }
 
 }

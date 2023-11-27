@@ -13,7 +13,6 @@ import java.util.*
 
 class BearerToken(val value: String): AbstractAuthenticationToken(AuthorityUtils.NO_AUTHORITIES){
     override fun getCredentials() = value
-
     override fun getPrincipal() = value
 }
 

@@ -5,6 +5,7 @@ import com.example.ecommerce.product.document.ProductOption
 
 data class ProductInfoResponse(
         val name: String,
+        val minimumPrice: Int,
         val image: String?,
         val description: String?,
         val wishCount: Int,
@@ -15,6 +16,7 @@ data class ProductInfoResponse(
         fun fromProduct(product: Product): ProductInfoResponse {
             return ProductInfoResponse(
                     name = product.name,
+                    minimumPrice = product.minimumPrice,
                     image = product.image,
                     description = product.description?: null,
                     wishCount = product.wishCount,

@@ -1,9 +1,9 @@
 package com.example.ecommerce.delivery
 
-import com.example.ecommerce.cart.CartItemRepository
-import com.example.ecommerce.cart.CartRepository
+import com.example.ecommerce.delivery.dto.InitiateRequest
 import com.example.ecommerce.order.OrderItemRepository
 import com.example.ecommerce.user.UserRepository
+import com.example.ecommerce.util.SecurityUtils
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
@@ -24,7 +24,13 @@ class DeliveryHandler(
                         orderItemRepository.findAllById(initiateRequest.orderItemIds)
                             .collectList()
                             .flatMap { orderItems ->
-                                deliveryService.initiate(initiateRequest)
+                                SecurityUtils.currentUser()
+                                    .flatMap { email ->
+                                        userRepository.findByEmail(email)
+                                            .flatMap { merchant ->
+                                                deliveryService.initiate(initiateRequest, merchant.id!!)
+                                            }
+                                    }
                                 ServerResponse.ok().build()
                             }
                     }

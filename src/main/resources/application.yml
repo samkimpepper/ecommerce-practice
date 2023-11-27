@@ -1,7 +1,8 @@
 spring:
   data:
     mongodb:
-      uri: mongodb://lcl:won2977@mongo1:27027,mongo2:27028,mongo3:27029/ecommerce?replicaSet=eReplicaSet
+      uri: mongodb://lcl:1234@mongo1:27017,mongo2:27018,mongo3:27019/test?replicaSet=eReplicaSet&authSource=admin
+      authentication-database: admin
 
 
 jwt:

@@ -1,4 +1,4 @@
-package com.example.ecommerce.delivery
+package com.example.ecommerce.delivery.dto
 
 data class InitiateRequest(
     val orderItemIds: List<String>,

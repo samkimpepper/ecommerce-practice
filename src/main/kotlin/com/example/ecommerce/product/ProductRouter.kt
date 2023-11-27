@@ -14,6 +14,7 @@ class ProductRouter(
         "/api/product".nest {
             POST("/", productHandler::saveProduct)
             GET("/{productId}", productHandler::getProductInfo)
+            GET("/{page}", productHandler::getAllProductsPaged)
         }
     }
 

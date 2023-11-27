@@ -11,11 +11,14 @@ data class Delivery(
         @Id
         var id: String? = null,
 
-        @Field("order_item_id", targetType = FieldType.OBJECT_ID)
+        @Field("order_item_ids", targetType = FieldType.OBJECT_ID)
         val orderItemIds: List<String>,
 
         @Field("customer_id", targetType = FieldType.OBJECT_ID)
         val customerId: String,
+
+        @Field("merchant_id", targetType = FieldType.OBJECT_ID)
+        val merchantId: String,
 
         @Field("shipper_id", targetType = FieldType.OBJECT_ID)
         val shipperId: String,
