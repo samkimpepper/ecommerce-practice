@@ -42,21 +42,33 @@ class CartService(
         return cartRepository.findByUserId(user.id!!)
             .switchIfEmpty(cartRepository.save(Cart(userId = user.id!!)))
             .flatMap { cart ->
-                val item = CartItem(
-                        cartId = cart.id!!,
-                        productId = product.id!!,
-                        optionId = productOption.id!!,
-                        merchantId = product.merchantId,
-                        productName = product.name,
-                        optionSize = productOption.size,
-                        quantity = addItemRequest.quantity,
-                        price = productOption.price * addItemRequest.quantity,
-                )
-                cartItemRepository.save(item).thenReturn(cart)
+                cartItemRepository.findByOptionId(productOption.id!!)
+                    .flatMap { existingItem ->
+                        existingItem.quantity += addItemRequest.quantity
+                        existingItem.price = productOption.price * existingItem.quantity
+                        cartItemRepository.save(existingItem).thenReturn(cart)
+                    }
+                    .switchIfEmpty(
+                        Mono.defer {
+                            val item = CartItem(
+                                cartId = cart.id!!,
+                                productId = product.id!!,
+                                optionId = productOption.id!!,
+                                merchantId = product.merchantId,
+                                productName = product.name,
+                                optionSize = productOption.size,
+                                quantity = addItemRequest.quantity,
+                                price = productOption.price * addItemRequest.quantity,
+                            )
+                            cartItemRepository.save(item).thenReturn(cart)
+                        }
+                    )
             }
             .flatMap { cart ->
                 updateCartInfo(cart)
-                getCartWithItem(cart)
+                    .flatMap { updatedCart ->
+                        getCartWithItem(updatedCart)
+                    }
             }
     }
 
@@ -70,7 +82,9 @@ class CartService(
                 cartRepository.findById(item.cartId)
                     .flatMap { cart ->
                         updateCartInfo(cart)
-                        getCartWithItem(cart)
+                            .flatMap { cart ->
+                                getCartWithItem(cart)
+                            }
                     }
             }
     }
@@ -81,8 +95,12 @@ class CartService(
                 cart.totalPrice = 0
                 cart.totalShippingCost = 0
                 cart.totalQuantity = 0
-                val items = cartItemRepository.findAllByCartId(cart.id!!)
-                cartItemRepository.deleteAll(items)
+
+                cartRepository.save(cart)
+                    .flatMap { savedCart ->
+                        val items = cartItemRepository.findAllByCartId(cart.id!!)
+                        cartItemRepository.deleteAll(items)
+                    }
             }
     }
 
@@ -92,8 +110,12 @@ class CartService(
                 cart.totalPrice = 0
                 cart.totalShippingCost = 0
                 cart.totalQuantity = 0
-                val items = cartItemRepository.findAllByCartId(cart.id!!)
-                cartItemRepository.deleteAll(items)
+
+                cartRepository.save(cart)
+                    .flatMap { savedCart ->
+                        val items = cartItemRepository.findAllByCartId(cart.id!!)
+                        cartItemRepository.deleteAll(items)
+                    }
             }
     }
 

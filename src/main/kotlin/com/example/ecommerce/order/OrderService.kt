@@ -7,6 +7,7 @@ import com.example.ecommerce.order.document.OrderItem
 import com.example.ecommerce.order.document.PaymentMethod
 import com.example.ecommerce.deliveryaddress.DeliveryAddress
 import com.example.ecommerce.order.dto.OrderFromCartRequest
+import com.example.ecommerce.order.dto.OrderWithItem
 import com.example.ecommerce.order.dto.SingleProductRequest
 import com.example.ecommerce.product.document.Product
 import com.example.ecommerce.product.document.ProductOption
@@ -19,6 +20,7 @@ import reactor.core.publisher.Mono
 @Service
 class OrderService(
     private val orderRepository: OrderRepository,
+    private val orderAggregationRepository: OrderAggregationRepository,
     private val orderItemRepository: OrderItemRepository,
     private val eventPublisher: ApplicationEventPublisher,
 ) {
@@ -94,6 +96,11 @@ class OrderService(
             }
             .then()
     }
+
+    fun getOrderInfo(orderId: String): Mono<OrderWithItem> {
+        return orderAggregationRepository.findByIdWithInfo(orderId)
+    }
+
 
 
 

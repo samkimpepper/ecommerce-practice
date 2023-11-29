@@ -75,6 +75,14 @@ class OrderHandler(
             }
     }
 
+    fun getOrderInfo(serverRequest: ServerRequest): Mono<ServerResponse> {
+        val orderId = serverRequest.pathVariable("orderId")
+        return orderService.getOrderInfo(orderId)
+            .flatMap { orderWithItem ->
+                ServerResponse.ok().bodyValue(orderWithItem)
+            }
+    }
+
     private fun createQuantityPerOptionMap(quantityPerOptionId: Map<String, Int>): Mono<Map<ProductOption, Int>> {
         return Flux.fromIterable(quantityPerOptionId.entries)
             .flatMap { entry ->

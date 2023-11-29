@@ -14,6 +14,7 @@ class OrderRouter(
         "/api/order".nest {
             POST("/cart", orderHandler::placeOrderFromCart)
             POST("/single", orderHandler::orderSingleProduct)
+            GET("/{orderId}", orderHandler::getOrderInfo)
         }
     }
 }
