@@ -15,29 +15,52 @@ import reactor.core.scheduler.Schedulers
 @Component
 class OrderEventHandler(
     private val cartService: CartService,
-    private val deliveryService: DeliveryService,
     private val productOptionRepository: ProductOptionRepository,
     private val notificationRepository: NotificationRepository,
 ) {
+
     @EventListener
     fun onOrderCreated(event: OrderCreatedEvent) {
-
-        Mono.just(event)
-            .flatMap { cartService.emptyCart(event.order.customerId).then() }
-            .then(Flux.fromIterable(event.orderItems)
-                .flatMap { orderItem ->
-                    productOptionRepository.findById(orderItem.optionId!!)
-                        .flatMap { option ->
-                            option.decreaseStock(orderItem.quantity)
-                            productOptionRepository.save(option)
-                        }
-                }.then()
-            )
-            .flatMap {
-                println("notification!!")
-                notificationRepository.saveAll(event.toNotifications())
-                    .then()
+        val emptyCartMono = cartService.emptyCart(event.order.customerId)
+        val decreaseStockFlux = Flux.fromIterable(event.orderItems)
+            .flatMap { orderItem ->
+                productOptionRepository.findById(orderItem.optionId!!)
+                    .flatMap { option ->
+                        option.decreaseStock(orderItem.quantity)
+                        productOptionRepository.save(option)
+                    }
             }
+        val saveNotificationMono = notificationRepository.saveAll(event.toNotifications())
+
+        Flux.merge(emptyCartMono, decreaseStockFlux, saveNotificationMono)
+            .doOnError { e -> println("onOrderCreated error: ${e.message}") }
             .subscribe()
     }
+//    @EventListener
+//    fun onOrderCreated(event: OrderCreatedEvent) {
+//        println(event.orderItems.get(0))
+//
+//        Mono.just(event)
+//            .flatMap { cartService.emptyCart(event.order.customerId) }
+//            .then(Flux.fromIterable(event.orderItems)
+//                .flatMap { orderItem ->
+//                    println("order item")
+//                    productOptionRepository.findById(orderItem.optionId!!)
+//                        .flatMap { option ->
+//                            println("option")
+//                            option.decreaseStock(orderItem.quantity)
+//                            productOptionRepository.save(option)
+//                        }
+//                }.then()
+//            )
+//            .flatMap {
+//                println("notification!!")
+//                notificationRepository.saveAll(event.toNotifications())
+//                    .then()
+//            }
+//            .doOnError { e ->
+//                println("error: ${e.message}")
+//            }
+//            .subscribe()
+//    }
 }
