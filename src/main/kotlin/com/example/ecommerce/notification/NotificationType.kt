@@ -2,6 +2,7 @@ package com.example.ecommerce.notification
 
 enum class NotificationType {
     ORDER_PLACED,
+    ORDER_CANCELLED,
     DELIVERY_INITIATED,
     DELIVERY_STARTED,
     DELIVERY_COMPLETED,

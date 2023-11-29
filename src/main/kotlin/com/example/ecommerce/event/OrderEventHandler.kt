@@ -3,6 +3,7 @@ package com.example.ecommerce.event
 import com.example.ecommerce.cart.CartService
 import com.example.ecommerce.delivery.DeliveryService
 import com.example.ecommerce.notification.NotificationRepository
+import com.example.ecommerce.order.OrderCancelledEvent
 import com.example.ecommerce.order.OrderCreatedEvent
 import com.example.ecommerce.product.ProductOptionRepository
 import com.example.ecommerce.product.ProductRepository
@@ -30,10 +31,27 @@ class OrderEventHandler(
                         productOptionRepository.save(option)
                     }
             }
-        val saveNotificationMono = notificationRepository.saveAll(event.toNotifications())
+        val saveNotificationFlux = notificationRepository.saveAll(event.toNotifications())
 
-        Flux.merge(emptyCartMono, decreaseStockFlux, saveNotificationMono)
+        Flux.merge(emptyCartMono, decreaseStockFlux, saveNotificationFlux)
             .doOnError { e -> println("onOrderCreated error: ${e.message}") }
+            .subscribe()
+    }
+
+    @EventListener
+    fun onOrderCancelled(event: OrderCancelledEvent) {
+        val increaseStockFlux = Flux.fromIterable(event.orderItems)
+            .flatMap { orderItem ->
+                productOptionRepository.findById(orderItem.optionId!!)
+                    .flatMap { option ->
+                        option.increaseStock(orderItem.quantity)
+                        productOptionRepository.save(option)
+                    }
+            }
+        val saveNotificationsFlux = notificationRepository.saveAll(event.toNotifications())
+
+        Flux.merge(increaseStockFlux, saveNotificationsFlux)
+            .doOnError { e -> println("onOrderCancelled error: ${e.message}") }
             .subscribe()
     }
 //    @EventListener

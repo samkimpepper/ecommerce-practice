@@ -6,6 +6,7 @@ import com.example.ecommerce.order.document.Order
 import com.example.ecommerce.order.document.OrderItem
 import com.example.ecommerce.order.document.PaymentMethod
 import com.example.ecommerce.deliveryaddress.DeliveryAddress
+import com.example.ecommerce.order.document.OrderStatus
 import com.example.ecommerce.order.dto.OrderFromCartRequest
 import com.example.ecommerce.order.dto.OrderWithItem
 import com.example.ecommerce.order.dto.SingleProductRequest
@@ -101,7 +102,25 @@ class OrderService(
         return orderAggregationRepository.findByIdWithInfo(orderId)
     }
 
+    fun cancelOrder(orderId: String): Mono<Void> {
+        return orderRepository.findById(orderId)
+            .flatMap { order ->
+                // 곧바로 취소 가능
+                if (order.status == OrderStatus.ORDER_RECEIVED) {
+                    order.status = OrderStatus.CANCELLED
+                }
 
+                val orderItems = orderItemRepository.findAllByOrderId(order.id!!).collectList()
+
+                orderRepository.save(order)
+                    .then(orderItems)
+                    .map { orderItems -> order to orderItems }
+            }
+            .doOnSuccess { (order, orderItems) ->
+                eventPublisher.publishEvent(OrderCancelledEvent(order, orderItems))
+            }
+            .then()
+    }
 
 
     private fun calculateTotalAmount(quantityPerOption: Map<ProductOption, Int>): Int {

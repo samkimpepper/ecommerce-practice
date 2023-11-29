@@ -7,5 +7,7 @@ enum class OrderStatus {
     PROCESSING,
     SHIPPING_PENDING,
     SHIPPED,
-    DELIVERED
+    DELIVERED,
+
+    CANCELLED,
 }
