@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdn.iamport.kr/v1/iamport.js"></script>
+</head>
+<body>
+
+
+<script>
+    var IMP = window.IMP;
+    IMP.init("imp16540835");
+
+    IMP.request_pay({
+      pg: "tosspay.{PG 상점아이디}",
+      pay_method: "card",
+      merchant_uid: "order_no_0001", // 상점에서 생성한 고유 주문번호
+      name: "주문명:결제테스트", // 필수 파라미터 입니다.
+      amount: 1004,
+      buyer_email: "test@portone.io",
+      buyer_name: "구매자이름",
+      buyer_tel: "010-1234-5678",
+      buyer_addr: "서울특별시 강남구 삼성동",
+      buyer_postcode: "123-456",
+      m_redirect_url: "{결제 완료 후 리디렉션 될 URL}"
+    }, function (rsp) { // callback 로직
+        if (rsp.success == true) {
+
+        }
+    }
+});
+</script>
+</body>
+</html>
