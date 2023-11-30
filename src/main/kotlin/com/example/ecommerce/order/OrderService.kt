@@ -37,6 +37,7 @@ class OrderService(
             totalAmount = totalAmount,
             totalShippingCost = totalShippingCost,
             paymentMethod = paymentMethod,
+            itemSummary = "${cartItems.first().productName} 외 ${cartItems.count()}건"
         )
 
         return orderRepository.save(order)
@@ -73,6 +74,7 @@ class OrderService(
             totalAmount = totalAmount,
             totalShippingCost = totalShippingCost,
             paymentMethod = paymentMethod,
+            itemSummary = product.name,
         )
 
         return orderRepository.save(order)
@@ -100,6 +102,10 @@ class OrderService(
 
     fun getOrderInfo(orderId: String): Mono<OrderWithItem> {
         return orderAggregationRepository.findByIdWithInfo(orderId)
+    }
+
+    fun getOrderList(customerId: String): Flux<Order> {
+        return orderRepository.findAllByCustomerIdSorted(customerId)
     }
 
     private fun calculateTotalAmount(quantityPerOption: Map<ProductOption, Int>): Int {

@@ -17,6 +17,8 @@ data class Order(
         @Field("delivery_address_id", targetType = FieldType.OBJECT_ID)
         val deliveryAddressId: String,
 
+        val itemSummary: String,
+
         val totalAmount: Int,
 
         val totalShippingCost: Int,

@@ -83,6 +83,20 @@ class OrderHandler(
             }
     }
 
+    fun getOrderList(request: ServerRequest): Mono<ServerResponse> {
+        return SecurityUtils.currentUser()
+            .flatMap { email ->
+                userRepository.findByEmail(email)
+            }
+            .flatMapMany { user ->
+                orderService.getOrderList(user.id!!)
+            }
+            .collectList()
+            .flatMap { orderList ->
+                ServerResponse.ok().bodyValue(orderList)
+            }
+    }
+
     private fun createQuantityPerOptionMap(quantityPerOptionId: Map<String, Int>): Mono<Map<ProductOption, Int>> {
         return Flux.fromIterable(quantityPerOptionId.entries)
             .flatMap { entry ->
