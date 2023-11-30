@@ -5,6 +5,7 @@ import com.example.ecommerce.delivery.DeliveryService
 import com.example.ecommerce.notification.NotificationRepository
 import com.example.ecommerce.order.OrderCancelledEvent
 import com.example.ecommerce.order.OrderCreatedEvent
+import com.example.ecommerce.order.OrderItemRepository
 import com.example.ecommerce.product.ProductOptionRepository
 import com.example.ecommerce.product.ProductRepository
 import org.springframework.context.event.EventListener
@@ -16,6 +17,7 @@ import reactor.core.scheduler.Schedulers
 @Component
 class OrderEventHandler(
     private val cartService: CartService,
+    private val orderItemRepository: OrderItemRepository,
     private val productOptionRepository: ProductOptionRepository,
     private val notificationRepository: NotificationRepository,
 ) {
@@ -40,7 +42,7 @@ class OrderEventHandler(
 
     @EventListener
     fun onOrderCancelled(event: OrderCancelledEvent) {
-        val increaseStockFlux = Flux.fromIterable(event.orderItems)
+        val increaseStockFlux = orderItemRepository.findAllByOrderId(event.order.id!!)
             .flatMap { orderItem ->
                 productOptionRepository.findById(orderItem.optionId!!)
                     .flatMap { option ->
@@ -48,7 +50,12 @@ class OrderEventHandler(
                         productOptionRepository.save(option)
                     }
             }
-        val saveNotificationsFlux = notificationRepository.saveAll(event.toNotifications())
+
+        val saveNotificationsFlux = orderItemRepository.findAllByOrderId(event.order.id!!)
+            .collectList()
+            .flatMapMany { orderItems ->
+                notificationRepository.saveAll(event.toNotifications(orderItems))
+            }
 
         Flux.merge(increaseStockFlux, saveNotificationsFlux)
             .doOnError { e -> println("onOrderCancelled error: ${e.message}") }

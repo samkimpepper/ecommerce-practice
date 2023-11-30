@@ -7,9 +7,9 @@ import com.example.ecommerce.order.document.OrderItem
 import org.springframework.context.ApplicationEvent
 import java.io.File.separator
 
-class OrderCancelledEvent(val order: Order, val orderItems: List<OrderItem>): ApplicationEvent(order) {
+class OrderCancelledEvent(val order: Order): ApplicationEvent(order) {
 
-    fun toNotifications(): List<Notification> {
+    fun toNotifications(orderItems: List<OrderItem>): List<Notification> {
         val merchantToItemsGroups = orderItems.groupBy { it.merchantId }
 
         return merchantToItemsGroups.map { (merchantId, items) ->
