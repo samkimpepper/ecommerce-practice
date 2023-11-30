@@ -14,6 +14,7 @@ class PaymentRouter(
         "/api/payment".nest {
             POST("/ready", paymentHandler::ready)
             PUT("/success", paymentHandler::success)
+            GET("/{paymentId}", paymentHandler::getPaymentInfo)
         }
     }
 }

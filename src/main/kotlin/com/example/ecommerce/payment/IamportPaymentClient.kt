@@ -16,6 +16,7 @@ class IamportPaymentClient(
 ) {
     private val REQUEST_TOKEN_URL = "https://api.iamport.kr/users/getToken"
     private val REQUEST_VALIDATE_URL = "https://api.iamport.kr/payments/"
+    private val REQUEST_CANCEL_URL = "https://api.iamport.kr/payments/cancel"
 
     fun getToken(): Mono<String> {
         val webClient = WebClient.create(REQUEST_TOKEN_URL)
@@ -40,9 +41,31 @@ class IamportPaymentClient(
                 .uri("$REQUEST_VALIDATE_URL$impUid")
                 .header("Authorization", token)
                 .retrieve()
-                .bodyToMono(ValidateResponseBody::class.java)
+                .bodyToMono(PaymentResponseBody::class.java)
                 .map { response ->
                     amount == response.response.amount
+                }
+        }
+    }
+
+    fun cancelPayment(impUid: String, amount: Int): Mono<Boolean> {
+        return getToken().flatMap { token ->
+            val webClient = WebClient.create()
+
+            val body = CancelRequestBody(
+                imp_uid = impUid,
+                amount = amount,
+                checksum = amount,
+            )
+
+            webClient.post()
+                .uri(REQUEST_CANCEL_URL)
+                .bodyValue(body)
+                .header("Authorization", token)
+                .retrieve()
+                .bodyToMono(PaymentResponseBody::class.java)
+                .map { response ->
+                    response.code == 200
                 }
         }
     }
@@ -65,7 +88,7 @@ data class TokenResponseBody(
     )
 }
 
-data class ValidateResponseBody(
+data class PaymentResponseBody(
     val code: Int,
     val message: String?,
     val response: InnerResponse,
@@ -76,5 +99,12 @@ data class ValidateResponseBody(
         val amount: Int,
         val cancel_amount: Int,
         val currency: String,
+        val status: String,
     )
 }
+
+data class CancelRequestBody(
+    val imp_uid: String,
+    val amount: Int,
+    val checksum: Int,
+)

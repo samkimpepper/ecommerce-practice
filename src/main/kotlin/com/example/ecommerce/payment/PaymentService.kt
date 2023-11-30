@@ -41,4 +41,10 @@ class PaymentService(
                 eventPublisher.publishEvent(PaymentSucceedEvent(payment.orderId, payment.buyerId))
             }
     }
+
+    fun getPaymentInfo(paymentId: String): Mono<Payment> {
+        return paymentRepository.findById(paymentId)
+    }
+
+
 }

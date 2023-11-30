@@ -102,27 +102,6 @@ class OrderService(
         return orderAggregationRepository.findByIdWithInfo(orderId)
     }
 
-    fun cancelOrder(orderId: String): Mono<Void> {
-        return orderRepository.findById(orderId)
-            .flatMap { order ->
-                // 곧바로 취소 가능
-                if (order.status == OrderStatus.ORDER_RECEIVED) {
-                    order.status = OrderStatus.CANCELLED
-                }
-
-                val orderItems = orderItemRepository.findAllByOrderId(order.id!!).collectList()
-
-                orderRepository.save(order)
-                    .then(orderItems)
-                    .map { orderItems -> order to orderItems }
-            }
-            .doOnSuccess { (order, orderItems) ->
-                eventPublisher.publishEvent(OrderCancelledEvent(order, orderItems))
-            }
-            .then()
-    }
-
-
     private fun calculateTotalAmount(quantityPerOption: Map<ProductOption, Int>): Int {
         val totalAmount = quantityPerOption.entries.sumOf { (option, quantity) ->
             option.price * quantity

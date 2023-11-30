@@ -26,10 +26,12 @@ data class Order(
         var status: OrderStatus = OrderStatus.ORDER_RECEIVED,
 
         val orderedAt: Instant = Instant.now(),
-
-        val paidAt: Instant? = null,
 ) {
         fun paymentSucceed() {
                 status = OrderStatus.PAYMENT_COMPLETED
+        }
+
+        fun cancel() {
+                status = OrderStatus.CANCELLED
         }
 }

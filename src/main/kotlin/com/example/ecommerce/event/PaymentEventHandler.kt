@@ -43,6 +43,5 @@ class PaymentEventHandler(
         Flux.merge(orderMono, buyerMono)
             .doOnError { e -> println("onPaymentSucceed error: ${e.message}") }
             .subscribe()
-
     }
 }

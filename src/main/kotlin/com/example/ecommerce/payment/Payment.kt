@@ -31,6 +31,8 @@ data class Payment(
 
     var paidAt: Instant? = null,
 
+    var cancelledAt: Instant? = null,
+
     @Field("buyer_id", targetType = FieldType.OBJECT_ID)
     val buyerId: String,
 
@@ -50,5 +52,9 @@ data class Payment(
         buyerEmail = request.buyer_email
         buyerTel = request.buyer_tel
         paidAt = Instant.ofEpochMilli(request.paid_at)
+    }
+
+    fun cancel() {
+        status = PaymentStatus.CANCELLED
     }
 }

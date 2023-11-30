@@ -3,7 +3,8 @@ package com.example.ecommerce.payment
 enum class PaymentStatus {
     PAID,
     FAILED,
-    READY;
+    READY,
+    CANCELLED;
 
     companion object {
         fun convert(method: String): PaymentStatus {

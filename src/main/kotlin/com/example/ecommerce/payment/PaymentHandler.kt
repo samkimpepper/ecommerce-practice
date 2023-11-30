@@ -41,6 +41,10 @@ class PaymentHandler(
     fun getPaymentInfo(request: ServerRequest): Mono<ServerResponse> {
         val paymentId = request.pathVariable("paymentId")
 
-
+        return paymentService.getPaymentInfo(paymentId)
+            .flatMap { payment ->
+                ServerResponse.ok().bodyValue(payment)
+            }
     }
+
 }

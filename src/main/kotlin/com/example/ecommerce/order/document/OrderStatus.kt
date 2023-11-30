@@ -9,5 +9,15 @@ enum class OrderStatus {
     SHIPPED,
     DELIVERED,
 
-    CANCELLED,
+    CANCELLED;
+
+    companion object {
+        fun isCancellable(status: OrderStatus): Boolean {
+            return status == ORDER_RECEIVED ||
+                    status == PAYMENT_PENDING ||
+                    status == PAYMENT_COMPLETED ||
+                    status == PROCESSING ||
+                    status == SHIPPING_PENDING
+        }
+    }
 }
