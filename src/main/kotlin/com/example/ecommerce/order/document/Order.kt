@@ -28,4 +28,8 @@ data class Order(
         val orderedAt: Instant = Instant.now(),
 
         val paidAt: Instant? = null,
-)
+) {
+        fun paymentSucceed() {
+                status = OrderStatus.PAYMENT_COMPLETED
+        }
+}

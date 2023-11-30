@@ -1,6 +1,7 @@
 package com.example.ecommerce.payment
 
 import com.example.ecommerce.payment.dto.ReadyResponse
+import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Mono
 
@@ -8,6 +9,7 @@ import reactor.core.publisher.Mono
 class PaymentService(
     private val paymentRepository: PaymentRepository,
     private val iamportPaymentClient: IamportPaymentClient,
+    private val eventPublisher: ApplicationEventPublisher,
 ) {
     fun ready(orderId: String, buyerId: String): Mono<ReadyResponse> {
         val payment = Payment(
@@ -34,6 +36,9 @@ class PaymentService(
                         payment.success(request)
                         paymentRepository.save(payment)
                     }
+            }
+            .doOnSuccess { payment->
+                eventPublisher.publishEvent(PaymentSucceedEvent(payment.orderId, payment.buyerId))
             }
     }
 }
